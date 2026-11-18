@@ -1,0 +1,57 @@
+name: CI/CD - Minha Aplicacao
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  teste:
+    name: Testar aplicacao
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar codigo
+        uses: actions/checkout@v6
+
+      - name: Verificar arquivos
+        run: |
+          test -f meu-projeto/index.html
+          test -f meu-projeto/style.css
+          test -f meu-projeto/script.js
+
+      - name: Teste concluido
+        run: echo "Todos os arquivos foram encontrados!"
+
+  deploy:
+    name: Publicar aplicacao
+    needs: teste
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Baixar codigo
+        uses: actions/checkout@v6
+
+      - name: Configurar Pages
+        uses: actions/configure-pages@v5
+
+      - name: Preparar arquivos
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: './meu-projeto'
+
+      - name: Fazer deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
